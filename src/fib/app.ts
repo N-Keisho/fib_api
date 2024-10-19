@@ -32,11 +32,23 @@ fib.get('/', (c) => {
 			400
 		);
 	}
-	const fibs = [0, 1];
-	for (let i = 2; i <= num; i++) {
-		fibs.push(fibs[i - 1] + fibs[i - 2]);
-	}
-	return c.json({ result: fibs[num] }, 200);
+    if (num > 1400){
+        return c.json(
+            {
+                status: '400',
+                message: 'n should be less than 1400',
+            },
+            400
+        );
+    }
+	let a = 0n, b = 1n;
+    for (let i = 2 ; i <= num; i++) {
+        const temp = a + b;
+        a = b;
+        b = temp;
+    }
+    const result = b.toString();
+	return c.json({ result: result }, 200);
 });
 
 export default fib;
