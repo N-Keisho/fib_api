@@ -1,25 +1,61 @@
-// test/index.spec.ts
-import { env, createExecutionContext, waitOnExecutionContext, SELF } from 'cloudflare:test';
 import { describe, it, expect } from 'vitest';
-import worker from '../src/index';
+import app from '../src/index';
 
-// For now, you'll need to do something like this to get a correctly-typed
-// `Request` to pass to `worker.fetch()`.
-const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
+describe('GET /fib', () => {
 
-describe('Hello World worker', () => {
-	it('responds with Hello World! (unit style)', async () => {
-		const request = new IncomingRequest('http://example.com');
-		// Create an empty context to pass to `worker.fetch()`.
-		const ctx = createExecutionContext();
-		const response = await worker.fetch(request, env, ctx);
-		// Wait for all `Promise`s passed to `ctx.waitUntil()` to settle before running test assertions
-		await waitOnExecutionContext(ctx);
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
+	it('GET /fib', async () => {
+		const res = await app.request('/fib');
+		const text = await res.text();
+		expect(res.status).toBe(400);
+		expect(JSON.parse(text)).toEqual({ status: '400', message: 'n is required' });
 	});
 
-	it('responds with Hello World! (integration style)', async () => {
-		const response = await SELF.fetch('https://example.com');
-		expect(await response.text()).toMatchInlineSnapshot(`"Hello World!"`);
+	it('GET /fib?n=', async () => {
+		const res = await app.request('/fib?n=');
+		const text = await res.text();
+		expect(res.status).toBe(400);
+		expect(JSON.parse(text)).toEqual({ status: '400', message: 'n is required' });
+	});
+
+	it('GET /fib?n=abc', async () => {
+		const res = await app.request('/fib?n=abc');
+		const text = await res.text();
+		expect(res.status).toBe(400);
+		expect(JSON.parse(text)).toEqual({ status: '400', message: 'n should be a number' });
+	});
+
+	it('GET /fib?n=-1', async () => {
+		const res = await app.request('/fib?n=-1');
+		const text = await res.text();
+		expect(res.status).toBe(400);
+		expect(JSON.parse(text)).toEqual({ status: '400', message: 'n should be a positive number' });
+	});
+
+	it('GET /fib?n=0', async () => {
+		const res = await app.request('/fib?n=0');
+		const text = await res.text();
+		expect(res.status).toBe(400);
+		expect(JSON.parse(text)).toEqual({ status: '400', message: 'n should be a positive number' });
+	});
+
+	it('GET /fib?n=10', async () => {
+		const res = await app.request('/fib?n=10');
+		const text = await res.text();
+		expect(res.status).toBe(200);
+		expect(JSON.parse(text)).toEqual({ result: '55' });
+	});
+
+	it('GET /fib?n=99', async () => {
+		const res = await app.request('/fib?n=99');
+		const text = await res.text();
+		expect(res.status).toBe(200);
+		expect(JSON.parse(text)).toEqual({ result: '218922995834555169026' });
+	});
+
+	it('GET /fib?n=1401', async () => {
+		const res = await app.request('/fib?n=1401');
+		const text = await res.text();
+		expect(res.status).toBe(400);
+		expect(JSON.parse(text)).toEqual({ status: '400', message: 'n should be less than 1400' });
 	});
 });
