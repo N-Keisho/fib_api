@@ -1,8 +1,10 @@
 import { Hono } from 'hono';
 
 const fib = new Hono();
+const MAX = 1400;
 
 fib.get('/', (c) => {
+
 	const n = c.req.query('n');
 	if (!n) {
 		return c.json(
@@ -14,6 +16,8 @@ fib.get('/', (c) => {
 		);
 	}
 	const num = parseInt(n);
+    
+    // Error handling
 	if (isNaN(num)) {
 		return c.json(
 			{
@@ -32,7 +36,7 @@ fib.get('/', (c) => {
 			400
 		);
 	}
-    if (num > 1400){
+    if (num > MAX){
         return c.json(
             {
                 status: '400',
@@ -41,6 +45,8 @@ fib.get('/', (c) => {
             400
         );
     }
+
+    // Calculate fibonacci number
 	let a = 0n, b = 1n;
     for (let i = 2 ; i <= num; i++) {
         const temp = a + b;
@@ -48,6 +54,7 @@ fib.get('/', (c) => {
         b = temp;
     }
     const result = b.toString();
+
 	return c.json({ result: result }, 200);
 });
 
