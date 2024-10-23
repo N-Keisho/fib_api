@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import  fibCal  from './model'
 
 const fib = new Hono();
 const MAX = 1400;
@@ -15,8 +16,7 @@ fib.get('/', (c) => {
 			400
 		);
 	}
-	const num = parseInt(n);
-    
+	const num = Number(n);
     // Error handling
 	if (isNaN(num)) {
 		return c.json(
@@ -45,17 +45,22 @@ fib.get('/', (c) => {
             400
         );
     }
+	const numFloat = parseFloat(n);
+	if (numFloat % 1 !== 0) {
+		return c.json(
+			{
+				status: '400',
+				message: 'n should be an integer',
+			},
+			400
+		);
+	}
 
-    // Calculate fibonacci number
-	let a = 0n, b = 1n;
-    for (let i = 2 ; i <= num; i++) {
-        const temp = a + b;
-        a = b;
-        b = temp;
-    }
-    const result = b.toString();
+    const result = fibCal(num);
 
 	return c.json({ result: result }, 200);
 });
+
+
 
 export default fib;
